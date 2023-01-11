@@ -1,8 +1,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
-
-using namespace std;
+#include <exception>
 
 enum rounding_mode {
     round_random,
@@ -10,8 +9,15 @@ enum rounding_mode {
     round_down
 };
 
+enum Operation {
+    add,
+    sub,
+    mul,
+    div
+};
+
 struct UnaryNumber {
-    string number;
+    std::string number;
     int num_delay;
 };
 
@@ -19,7 +25,7 @@ struct UnaryNumber {
 UnaryNumber toUnary(double n, rounding_mode mode = round_random, int delay = 0, int len = 0) {
     bool done = false;
     double ones = 0;
-    string number;
+    std::string number;
 
     while (!done) {
         double ifone = abs(n - ((ones + 1) / (number.length() + 1)));
@@ -30,10 +36,11 @@ UnaryNumber toUnary(double n, rounding_mode mode = round_random, int delay = 0, 
             done = true;
         } else if (ifzero == 0) {
             number += '0';
+            ones++;
             done = true;
         } else if (ifone < ifzero) {
-            ones++;
             number += '1';
+            ones++;
         } else if (ifzero < ifone) {
             number += '0';
         } else {
@@ -52,8 +59,8 @@ UnaryNumber toUnary(double n, rounding_mode mode = round_random, int delay = 0, 
                     digit = rand() % 2;
                     break;
             }
+            number += std::to_string(digit);
             ones += digit;
-            number += to_string(digit);
         }
 
         if (number.length() == len) {
@@ -65,7 +72,7 @@ UnaryNumber toUnary(double n, rounding_mode mode = round_random, int delay = 0, 
         int total_len = number.length() + delay;
         int num_delays = delay / (number.length() + 1);
         int extra_delays = delay % (number.length() + 1);
-        string delay_number = string(num_delays, '*');
+        std::string delay_number = std::string(num_delays, '*');
 
         int i = 0;
         while (i < total_len) {
@@ -85,7 +92,7 @@ UnaryNumber toUnary(double n, rounding_mode mode = round_random, int delay = 0, 
 }
 
 double toDouble(UnaryNumber n) {
-    string number = n.number;
+    std::string number = n.number;
     double result;
     double ones = 0;
     for (int i = 0; i < number.length(); i++) {
@@ -99,8 +106,8 @@ double toDouble(UnaryNumber n) {
     return result;
 }
 
-UnaryNumber add(UnaryNumber a, UnaryNumber b) {
-    string result;
+UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x) {
+    std::string result;
     double a_total              = 0;
     double a_ones               = 0;
     double a_low_interval       = 0;
@@ -111,29 +118,28 @@ UnaryNumber add(UnaryNumber a, UnaryNumber b) {
     double b_low_interval       = 0;
     double b_high_interval      = 1;
 
-    double last_a               = a_total;
-    double last_b               = b_total;
     double result_total         = 0;
     double result_ones          = 0;
     double result_mid           = ((result_ones + 1) / (result_total + 2));
-    double result_low_interval  = a_low_interval + b_low_interval;
-    double result_high_interval = a_high_interval + b_high_interval;
+    double result_low_interval;
+    double result_high_interval;
 
-    int len = max(a.number.length(), b.number.length());
+    int len = std::max(a.number.length(), b.number.length());
     int delay = 0;
 
-    cout << "A: " << a.number << endl;
-    cout << "B: " << b.number << endl << endl;
+    std::cout << "A: " << a.number << std::endl;
+    std::cout << "B: " << b.number << std::endl << std::endl;
 
-    for (int i = 0; i < len; i++) {
+    int i = 0;
+    while (i < len || result_mid <= result_low_interval || result_mid >= result_high_interval) {
         if (a.number[i] == '0' || a.number[i] == '1') {
             double change = a.number[i] - '0';
             a_total += 1;
             a_ones += change;
             if (change) {
-                a_low_interval = max(a_low_interval, (((a_ones)/a_total) + ((a_ones - 1)/a_total)) / 2.0);
+                a_low_interval = std::max(a_low_interval, (((a_ones)/a_total) + ((a_ones - 1)/a_total)) / 2.0);
             } else {
-                a_high_interval = min(a_high_interval, (((a_ones)/a_total) + ((a_ones + 1)/a_total)) / 2.0);
+                a_high_interval = std::min(a_high_interval, (((a_ones)/a_total) + ((a_ones + 1)/a_total)) / 2.0);
             }
         }
         if (b.number[i] == '0' || b.number[i] == '1') {
@@ -141,50 +147,24 @@ UnaryNumber add(UnaryNumber a, UnaryNumber b) {
             b_total += 1;
             b_ones += change;
             if (change) {
-                b_low_interval = max(b_low_interval, (((b_ones)/b_total) + ((b_ones - 1)/b_total)) / 2.0);
+                b_low_interval = std::max(b_low_interval, (((b_ones)/b_total) + ((b_ones - 1)/b_total)) / 2.0);
             } else {
-                b_high_interval = min(b_high_interval, (((b_ones)/b_total) + ((b_ones + 1)/b_total)) / 2.0);
+                b_high_interval = std::min(b_high_interval, (((b_ones)/b_total) + ((b_ones + 1)/b_total)) / 2.0);
             }
         }
-        if (last_a != a_total || last_b != b_total) {
-            last_a = a_total;
-            last_b = b_total;
-            result_low_interval  = a_low_interval + b_low_interval;
-            result_high_interval = a_high_interval + b_high_interval;
 
-            if (result_mid <= result_low_interval) {
-                result += '1';
-                result_ones += 1;
-                result_total += 1;
-            } else if (result_mid >= result_high_interval) {
-                result += '0';
-                result_total += 1;
-            } else {
-                result += '*';
-                delay += 1;
-            }
-
-            cout << "Digit: " << i << endl;
-            cout << "A_Low_Interval: " << a_low_interval << endl;
-            cout << "A_High_Interval: " << a_high_interval << endl;
-            cout << "B_Low_Interval: " << b_low_interval << endl;
-            cout << "B_High_Interval: " << b_high_interval << endl;
-            cout << "Calc_Result_Low_Interval: " << result_low_interval << endl;
-            cout << "Calc_Result_High_Interval: " << result_high_interval << endl;
-            cout << "Current_Result: " << result << endl;
-            cout << "Midpoint: " << result_mid << endl << endl;
-
-            result_mid = result_total == 0 ? 0.5 : (1/(result_total + 1)) * (((result_ones) / (result_total)) + 0.5);
-
-        } else {
-            result += '*';
-            delay += 1;
+        switch (x) {
+            case add:
+                result_low_interval  = a_low_interval + b_low_interval;
+                result_high_interval = a_high_interval + b_high_interval;
+                break;
+            case mul:
+                result_low_interval  = a_low_interval * b_low_interval;
+                result_high_interval = a_high_interval * b_high_interval;
+                break;
+            default:
+                throw std::exception();
         }
-    }
-    cout << "Input Stream Finished" << endl << endl;
-
-    bool done = false;
-    while (!done) {
 
         if (result_mid <= result_low_interval) {
             result += '1';
@@ -194,130 +174,27 @@ UnaryNumber add(UnaryNumber a, UnaryNumber b) {
             result += '0';
             result_total += 1;
         } else {
-            done = true;
-        }
-
-        cout << "Calc_Result_Low_Interval: " << result_low_interval << endl;
-        cout << "Calc_Result_High_Interval: " << result_high_interval << endl;
-        cout << "Current_Result: " << result << endl;
-        cout << "Midpoint: " << result_mid << endl << endl;
-
-        result_mid = result_total == 0 ? 0.5 : (1/(result_total + 1)) * (((result_ones) / (result_total)) + 0.5);
-    }
-
-    UnaryNumber output = {result, delay};
-    cout << "Output: " << result << endl << endl;
-    return output;
-}
-
-UnaryNumber mul(UnaryNumber a, UnaryNumber b) {
-    string result;
-    double a_total              = 0;
-    double a_ones               = 0;
-    double a_low_interval       = 0;
-    double a_high_interval      = 1;
-
-    double b_total              = 0;
-    double b_ones               = 0;
-    double b_low_interval       = 0;
-    double b_high_interval      = 1;
-
-    double last_a               = a_total;
-    double last_b               = b_total;
-    double result_total         = 0;
-    double result_ones          = 0;
-    double result_mid           = ((result_ones + 1) / (result_total + 2));
-    double result_low_interval  = a_low_interval * b_low_interval;
-    double result_high_interval = a_high_interval * b_high_interval;
-
-    int len = max(a.number.length(), b.number.length());
-    int delay = 0;
-
-    cout << "A: " << a.number << endl;
-    cout << "B: " << b.number << endl << endl;
-
-    for (int i = 0; i < len; i++) {
-        if (a.number[i] == '0' || a.number[i] == '1') {
-            double change = a.number[i] - '0';
-            a_total += 1;
-            a_ones += change;
-            if (change) {
-                a_low_interval = max(a_low_interval, (((a_ones)/a_total) + ((a_ones - 1)/a_total)) / 2.0);
-            } else {
-                a_high_interval = min(a_high_interval, (((a_ones)/a_total) + ((a_ones + 1)/a_total)) / 2.0);
-            }
-        }
-        if (b.number[i] == '0' || b.number[i] == '1') {
-            double change = b.number[i] - '0';
-            b_total += 1;
-            b_ones += change;
-            if (change) {
-                b_low_interval = max(b_low_interval, (((b_ones)/b_total) + ((b_ones - 1)/b_total)) / 2.0);
-            } else {
-                b_high_interval = min(b_high_interval, (((b_ones)/b_total) + ((b_ones + 1)/b_total)) / 2.0);
-            }
-        }
-        if (last_a != a_total || last_b != b_total) {
-            last_a = a_total;
-            last_b = b_total;
-            result_low_interval  = a_low_interval * b_low_interval;
-            result_high_interval = a_high_interval * b_high_interval;
-
-            if (result_mid <= result_low_interval) {
-                result += '1';
-                result_ones += 1;
-                result_total += 1;
-            } else if (result_mid >= result_high_interval) {
-                result += '0';
-                result_total += 1;
-            } else {
-                result += '*';
-                delay += 1;
-            }
-            
-            cout << "Digit: " << i << endl;
-            cout << "A_Low_Interval: " << a_low_interval << endl;
-            cout << "A_High_Interval: " << a_high_interval << endl;
-            cout << "B_Low_Interval: " << b_low_interval << endl;
-            cout << "B_High_Interval: " << b_high_interval << endl;
-            cout << "Calc_Result_Low_Interval: " << result_low_interval << endl;
-            cout << "Calc_Result_High_Interval: " << result_high_interval << endl;
-            cout << "Current_Result: " << result << endl;
-            cout << "Midpoint: " << result_mid << endl << endl;
-
-            result_mid = result_total == 0 ? 0.5 : (1/(result_total + 1)) * (((result_ones) / (result_total)) + 0.5);
-            
-        } else {
             result += '*';
             delay += 1;
         }
-    }
-    cout << "Input Stream Finished" << result_mid << endl << endl;
-
-    bool done = false;
-    while (!done) {
-
-        if (result_mid <= result_low_interval) {
-            result += '1';
-            result_ones += 1;
-            result_total += 1;
-        } else if (result_mid >= result_high_interval) {
-            result += '0';
-            result_total += 1;
-        } else {
-            done = true;
-        }
-
-        cout << "Calc_Result_Low_Interval: " << result_low_interval << endl;
-        cout << "Calc_Result_High_Interval: " << result_high_interval << endl;
-        cout << "Current_Result: " << result << endl;
-        cout << "Midpoint: " << result_mid << endl << endl;
 
         result_mid = result_total == 0 ? 0.5 : (1/(result_total + 1)) * (((result_ones) / (result_total)) + 0.5);
+
+        std::cout << "Cycle: " << i << std::endl;
+        std::cout << "A_Low_Interval: " << a_low_interval << std::endl;
+        std::cout << "A_High_Interval: " << a_high_interval << std::endl;
+        std::cout << "B_Low_Interval: " << b_low_interval << std::endl;
+        std::cout << "B_High_Interval: " << b_high_interval << std::endl;
+        std::cout << "Calc_Result_Low_Interval: " << result_low_interval << std::endl;
+        std::cout << "Calc_Result_High_Interval: " << result_high_interval << std::endl;
+        std::cout << "Current_Result: " << result << std::endl;
+        std::cout << "Midpoint: " << result_mid << std::endl << std::endl;
+
+        i++;
     }
 
     UnaryNumber output = {result, delay};
-    cout << "Output: " << result << endl << endl;
+    std::cout << "Output: " << result << std::endl << std::endl;
     return output;
 }
 
@@ -327,21 +204,20 @@ int main() {
     double b = 2.0/4.0;
     double c = 1.0/4.0;
 
-    UnaryNumber ab = add(toUnary(a), toUnary(b));
-    UnaryNumber ac = add(toUnary(a), toUnary(c));
-    UnaryNumber abc = mul(ab, ac);
-    cout << "Unary: " << ab.number << endl;
-    cout << "Float: " << toDouble(ab) << endl;
-    cout << "Delay: " << ab.num_delay << endl;
-    cout << "Unary: " << ac.number << endl;
-    cout << "Float: " << toDouble(ac) << endl;
-    cout << "Delay: " << ac.num_delay << endl;
-    cout << "Unary: " << abc.number << endl;
-    cout << "Float: " << toDouble(abc) << endl;
-    cout << "Delay: " << abc.num_delay << endl;
+    UnaryNumber ab = operation(toUnary(a), toUnary(b), add);
+    UnaryNumber ac = operation(toUnary(a), toUnary(c), add);
+    UnaryNumber abc = operation(ab, ac, mul);
+    std::cout << "Unary: " << ab.number << std::endl;
+    std::cout << "Float: " << toDouble(ab) << std::endl;
+    std::cout << "Delay: " << ab.num_delay << std::endl;
+    std::cout << "Unary: " << ac.number << std::endl;
+    std::cout << "Float: " << toDouble(ac) << std::endl;
+    std::cout << "Delay: " << ac.num_delay << std::endl;
+    std::cout << "Unary: " << abc.number << std::endl;
+    std::cout << "Float: " << toDouble(abc) << std::endl;
+    std::cout << "Delay: " << abc.num_delay << std::endl;
     return 0;
 }
-
 
 // Online Arithmetic
 // Stochaistic Computing
