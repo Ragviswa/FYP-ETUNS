@@ -129,10 +129,6 @@ double determinant_interval_calc(double ones, double total, double length, Inter
     }
 }
 
-double determinant_result_calc(double ones, double total) {
-    return (ones/(total));
-}
-
 double indeterminant_interval_calc(double ones, double total, double length, Interval interval) {
     switch (interval) {
         case low:
@@ -147,7 +143,7 @@ double indeterminant_interval_calc(double ones, double total, double length, Int
 }
 
 double indeterminant_result_calc(double ones, double total) {
-    return (1/(total + 1)) * (((ones) / (total)) + 0.5);
+    return (1/(total + 1)) * (ones + 0.5);
 }
 
 UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType mode) {
@@ -171,9 +167,6 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
     int len = std::max(a.number.length(), b.number.length());
     int delay = 0;
 
-    std::cout << "A: " << a.number << std::endl;
-    std::cout << "B: " << b.number << std::endl << std::endl;
-
     double (*interval_calc)(double, double, double, Interval);
     double (*result_calc)(double, double);
     switch (mode) {
@@ -183,7 +176,7 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
             break;
         case determinant:
             interval_calc = determinant_interval_calc;
-            result_calc = determinant_result_calc;
+            result_calc = indeterminant_result_calc;
             break;
         default:
             throw std::exception();
@@ -192,31 +185,33 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
 
     int i = 0;
     while (i < len || result_mid <= result_low_interval || result_mid >= result_high_interval) {
-        if (a.number[i] == '0' || a.number[i] == '1') {
-            double change = a.number[i] - '0';
-            a_total += 1;
-            a_ones += change;
-            if (change) {
-                a_low_interval = std::max(a_low_interval, interval_calc(a_ones, a_total, (a.number.length() - a.num_delay), low));
-            } else {
-                a_high_interval = std::min(a_high_interval, interval_calc(a_ones, a_total, (a.number.length() - a.num_delay), high));
+        if (i < len) {
+            if (a.number[i] == '0' || a.number[i] == '1') {
+                double change = a.number[i] - '0';
+                a_total += 1;
+                a_ones += change;
+                if (change) {
+                    a_low_interval = std::max(a_low_interval, interval_calc(a_ones, a_total, (a.number.length() - a.num_delay), low));
+                } else {
+                    a_high_interval = std::min(a_high_interval, interval_calc(a_ones, a_total, (a.number.length() - a.num_delay), high));
+                }
             }
-        }
-        if (b.number[i] == '0' || b.number[i] == '1') {
-            double change = b.number[i] - '0';
-            b_total += 1;
-            b_ones += change;
-            if (change) {
-                b_low_interval = std::max(b_low_interval, interval_calc(b_ones, b_total, (b.number.length() - b.num_delay), low));
-            } else {
-                b_high_interval = std::min(b_high_interval, interval_calc(b_ones, b_total, (b.number.length() - b.num_delay), high));
+            if (b.number[i] == '0' || b.number[i] == '1') {
+                double change = b.number[i] - '0';
+                b_total += 1;
+                b_ones += change;
+                if (change) {
+                    b_low_interval = std::max(b_low_interval, interval_calc(b_ones, b_total, (b.number.length() - b.num_delay), low));
+                } else {
+                    b_high_interval = std::min(b_high_interval, interval_calc(b_ones, b_total, (b.number.length() - b.num_delay), high));
+                }
             }
         }
 
         switch (x) {
             case add:
-                result_low_interval  = a_low_interval + b_low_interval;
-                result_high_interval = a_high_interval + b_high_interval;
+                result_low_interval  = (a_low_interval + b_low_interval)/2.0;
+                result_high_interval = (a_high_interval + b_high_interval)/2.0;
                 break;
             case mul:
                 result_low_interval  = a_low_interval * b_low_interval;
@@ -226,7 +221,7 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
                 throw std::exception();
         }
 
-        if (result_mid == result_low_interval && result_mid == result_high_interval) {
+        if ((result_ones/result_total) == result_low_interval && (result_ones/result_total) == result_high_interval) {
             break;
         } else if (result_mid <= result_low_interval) {
             result += '1';
@@ -242,6 +237,8 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
 
         result_mid = result_total == 0 ? 0.5 : result_calc(result_ones, result_total);
 
+        // std::cout << "A: " << a.number << std::endl;
+        // std::cout << "B: " << b.number << std::endl << std::endl;
         // std::cout << "Cycle: " << i << std::endl;
         // std::cout << "A_Low_Interval: " << a_low_interval << std::endl;
         // std::cout << "A_High_Interval: " << a_high_interval << std::endl;
@@ -256,45 +253,62 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
     }
 
     UnaryNumber output = {result, delay};
-    std::cout << "Output: " << result << std::endl << std::endl;
     return output;
 }
 
+// int main() {
+//     srand(0);
+//     double a = 0.0/100.0;
+//     double b = 0/100.0;
+//     double c = 2.0/4.0;
+
+//     double test = 3.0/32.0;
+
+//     // UnaryNumber detab = operation(toUnary(a, round_random, 0, 2), toUnary(b, round_random, 0, 2), add, determinant);
+//     UnaryNumber detac = operation(toUnary(a, round_random, 0, 2), toUnary(b, round_random, 0, 2), mul, indeterminant);
+//     // UnaryNumber detabc = operation(detab, detac, mul, determinant);
+
+//     // UnaryNumber inab = operation(toUnary(a, round_random), toUnary(b, round_random, 10), add, indeterminant);
+//     // UnaryNumber inac = operation(toUnary(a, round_random), toUnary(c, round_random, 10), add, indeterminant);
+//     // UnaryNumber inabc = operation(inab, inac, mul, indeterminant);
+//     // std::cout << "-----------------Indeterminant Mode-----------------" << std::endl;
+//     // std::cout << "Unary: " << inab.number << std::endl;
+//     // std::cout << "Float: " << toDouble(inab) << std::endl;
+//     // std::cout << "Delay: " << inab.num_delay << std::endl;
+//     // std::cout << "Unary: " << inac.number << std::endl;
+//     // std::cout << "Float: " << toDouble(inac) << std::endl;
+//     // std::cout << "Delay: " << inac.num_delay << std::endl;
+//     // std::cout << "Unary: " << inabc.number << std::endl;
+//     // std::cout << "Float: " << toDouble(inabc) << std::endl;
+//     // std::cout << "Delay: " << inabc.num_delay << std::endl;
+//     // std::cout << "----------------------------------------------------" << std::endl << std::endl;
+//     // std::cout << "------------------Determinant Mode------------------" << std::endl;
+//     // std::cout << "Unary: " << detab.number << std::endl;
+//     // std::cout << "Float: " << toDouble(detab) << std::endl;
+//     // std::cout << "Delay: " << detab.num_delay << std::endl;
+//     // std::cout << "Unary: " << detac.number << std::endl;
+//     // std::cout << "Float: " << toDouble(detac) << std::endl;
+//     // std::cout << "Delay: " << detac.num_delay << std::endl;
+//     // std::cout << "Unary: " << detabc.number << std::endl;
+//     // std::cout << "Float: " << toDouble(detabc) << std::endl;
+//     // std::cout << "Delay: " << detabc.num_delay << std::endl;
+//     // std::cout << "----------------------------------------------------" << std::endl << std::endl;
+//     return 0;
+// }
+
 int main() {
-    srand(0);
-    double a = 1.0/4.0;
-    double b = 1.0/4.0;
-    double c = 2.0/4.0;
-
-    UnaryNumber inab = operation(toUnary(a), toUnary(b), add, indeterminant);
-    UnaryNumber inac = operation(toUnary(a), toUnary(c), add, indeterminant);
-    UnaryNumber inabc = operation(inab, inac, mul, indeterminant);
-    std::cout << "-----------------Indeterminant Mode-----------------" << std::endl;
-    std::cout << "Unary: " << inab.number << std::endl;
-    std::cout << "Float: " << toDouble(inab) << std::endl;
-    std::cout << "Delay: " << inab.num_delay << std::endl;
-    std::cout << "Unary: " << inac.number << std::endl;
-    std::cout << "Float: " << toDouble(inac) << std::endl;
-    std::cout << "Delay: " << inac.num_delay << std::endl;
-    std::cout << "Unary: " << inabc.number << std::endl;
-    std::cout << "Float: " << toDouble(inabc) << std::endl;
-    std::cout << "Delay: " << inabc.num_delay << std::endl;
-    std::cout << "----------------------------------------------------" << std::endl << std::endl;
-
-    UnaryNumber detab = operation(toUnary(a), toUnary(b), add, determinant);
-    UnaryNumber detac = operation(toUnary(a), toUnary(c), add, determinant);
-    UnaryNumber detabc = operation(detab, detac, mul, determinant);
-    std::cout << "------------------Determinant Mode------------------" << std::endl;
-    std::cout << "Unary: " << detab.number << std::endl;
-    std::cout << "Float: " << toDouble(detab) << std::endl;
-    std::cout << "Delay: " << detab.num_delay << std::endl;
-    std::cout << "Unary: " << detac.number << std::endl;
-    std::cout << "Float: " << toDouble(detac) << std::endl;
-    std::cout << "Delay: " << detac.num_delay << std::endl;
-    std::cout << "Unary: " << detabc.number << std::endl;
-    std::cout << "Float: " << toDouble(detabc) << std::endl;
-    std::cout << "Delay: " << detabc.num_delay << std::endl;
-    std::cout << "----------------------------------------------------" << std::endl << std::endl;
+    srand((unsigned)time(NULL));
+    std::cout << "Length,Delay" << std::endl;
+    for (int i = 1; i <= 64; i*=2) {
+        for (int j = 0 ; j < 50; j++) {
+            double DoubleA = (double) rand()/RAND_MAX;
+            double DoubleB = (double) rand()/RAND_MAX;
+            UnaryNumber InputA = toUnary(DoubleA, round_random, 0, i);
+            UnaryNumber InputB = toUnary(DoubleB, round_random, 0, i);
+            UnaryNumber Output = operation(InputA, InputB, mul, determinant);
+            std::cout << i << "," << Output.num_delay << std::endl;
+        }
+    }
     return 0;
 }
 
