@@ -11,7 +11,8 @@ enum rounding_mode {
 
 enum OperationType {
     indeterminant,
-    determinant
+    determinant_fixed,
+    determinant_free
 };
 
 enum Operation {
@@ -174,7 +175,11 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
             interval_calc = indeterminant_interval_calc;
             result_calc = indeterminant_result_calc;
             break;
-        case determinant:
+        case determinant_fixed:
+            interval_calc = determinant_interval_calc;
+            result_calc = indeterminant_result_calc;
+            break;
+        case determinant_free:
             interval_calc = determinant_interval_calc;
             result_calc = indeterminant_result_calc;
             break;
@@ -235,6 +240,12 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
             delay += 1;
         }
 
+        if (mode == determinant_fixed) {
+            if (len == result_total) {
+                break;
+            }
+        }
+
         result_mid = result_total == 0 ? 0.5 : result_calc(result_ones, result_total);
 
         // std::cout << "A: " << a.number << std::endl;
@@ -253,6 +264,11 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
     }
 
     UnaryNumber output = {result, delay};
+
+    // std::cout << "A: " << a.number << std::endl;
+    // std::cout << "B: " << b.number << std::endl;
+    // std::cout << "Output: " << output.number << std::endl << std::endl;
+
     return output;
 }
 
@@ -298,33 +314,25 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
 
 int main() {
     srand((unsigned)time(NULL));
-    std::cout << "Length,Delay" << std::endl;
+    std::cout << "Length,Delay,TotalError,CalcError" << std::endl;
     for (int i = 1; i <= 64; i*=2) {
-        for (int j = 0 ; j < 50; j++) {
+        for (int j = 0 ; j < 1000; j++) {
             double DoubleA = (double) rand()/RAND_MAX;
             double DoubleB = (double) rand()/RAND_MAX;
+            double DoubleC = (double) rand()/RAND_MAX;
+            double DoubleD = (double) rand()/RAND_MAX;
             UnaryNumber InputA = toUnary(DoubleA, round_random, 0, i);
             UnaryNumber InputB = toUnary(DoubleB, round_random, 0, i);
-            UnaryNumber Output = operation(InputA, InputB, mul, determinant);
-            std::cout << i << "," << Output.num_delay << std::endl;
+            UnaryNumber InputC = toUnary(DoubleC, round_random, 0, i);
+            UnaryNumber InputD = toUnary(DoubleD, round_random, 0, i);
+            UnaryNumber OutputAB = operation(InputA, InputB, mul, determinant_fixed);
+            UnaryNumber OutputCD = operation(InputC, InputD, mul, determinant_fixed);
+            UnaryNumber Output  = operation(OutputAB, OutputCD, mul, determinant_fixed);
+            double total_error  = abs(toDouble(Output) - ((DoubleA + DoubleB)/2.0))/((DoubleA + DoubleB)/2.0);
+            double calc_error   = ((toDouble(InputA) + toDouble(InputB))/2.0) ? abs(toDouble(Output) - ((toDouble(InputA) + toDouble(InputB))/2.0))/((toDouble(InputA) + toDouble(InputB))/2.0) : 0;
+            //assert(toDouble(Output) == (((toDouble(InputA) + toDouble(InputB))/2.0 + (toDouble(InputC) + toDouble(InputD))/2.0)/2.0));
+            std::cout << i << "," << Output.num_delay << "," << total_error << "," << calc_error << "," << std::endl;
         }
     }
     return 0;
 }
-
-// Online Arithmetic
-// Stochaistic Computing
-// Julie's Paper
-
-
-// Look at a set of experimental results that would be meaningful to look at to investigate delays
-// Looking at the delay distribution for different combinations of input values
-// Looking at how the stacking of inputs can be interesting to look at
-// Best representation in hardware
-// Relax the strictness of the number system or the information we are getting from the inputs.
-// Uniformally distributed through 0 - 1 floating points that are converted. Three converters:
-// one that converts always by rounding up, rounding down and one that breaks the tie randomly
-// Plotting the distribution of the delays
-// Think about the hardware side of things.
-
-// Work on trying to get new algorith to work with midpoints
