@@ -200,13 +200,6 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
 
         if ((result_ones/result_total) == result_low_interval && (result_ones/result_total) == result_high_interval) {
             break;
-        } else if (result_mid_hi <= result_low_interval){
-            result += '1';
-            result_ones += 1;
-            result_total += 1;
-        } else if (result_mid_lo >= result_high_interval) {
-            result += '0';
-            result_total += 1;
         } else if (result_mid <= result_low_interval) {
             result += '1';
             result_ones += 1;
@@ -214,11 +207,18 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
         } else if (result_mid >= result_high_interval) {
             result += '0';
             result_total += 1;
-        } else if (result_mid_lo <= result_low_interval && abs(result_mid_lo - result_low_interval) > abs(result_mid_hi - result_high_interval)) {
+        } else if (result_mid_lo <= result_low_interval && result_mid_hi < result_high_interval) {
             result += '1';
             result_ones += 1;
             result_total += 1;
-        } else if (result_mid_hi >= result_high_interval && abs(result_mid_lo - result_low_interval) < abs(result_mid_hi - result_high_interval)) {
+        } else if (result_mid_hi >= result_high_interval && result_mid_lo > result_low_interval) {
+            result += '0';
+            result_total += 1;
+        } else if (result_mid_hi >= result_high_interval && result_mid_lo <= result_low_interval && abs(result_mid - result_low_interval) <= abs(result_mid - result_high_interval)) {
+            result += '1';
+            result_ones += 1;
+            result_total += 1;
+        } else if (result_mid_hi >= result_high_interval && result_mid_lo <= result_low_interval && abs(result_mid - result_low_interval) >= abs(result_mid - result_high_interval)) {
             result += '0';
             result_total += 1;
         } else {
@@ -236,17 +236,17 @@ UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType m
         result_mid      = result_total == 0 ? 0.5 : result_calc(result_ones, result_total, 0.0);
         result_mid_hi   = result_total == 0 ? 0.5 : result_calc(result_ones, result_total, +epsilon);
 
-        std::cout << "A: " << a.number << std::endl;
-        std::cout << "B: " << b.number << std::endl << std::endl;
-        std::cout << "Cycle: " << i << std::endl;
-        std::cout << "A_Low_Interval: " << a_low_interval << std::endl;
-        std::cout << "A_High_Interval: " << a_high_interval << std::endl;
-        std::cout << "B_Low_Interval: " << b_low_interval << std::endl;
-        std::cout << "B_High_Interval: " << b_high_interval << std::endl;
-        std::cout << "Calc_Result_Low_Interval: " << result_low_interval << std::endl;
-        std::cout << "Calc_Result_High_Interval: " << result_high_interval << std::endl;
-        std::cout << "Current_Result: " << result << std::endl;
-        std::cout << "Midpoint: " << result_mid << std::endl << std::endl;
+        // std::cout << "A: " << a.number << std::endl;
+        // std::cout << "B: " << b.number << std::endl << std::endl;
+        // std::cout << "Cycle: " << i << std::endl;
+        // std::cout << "A_Low_Interval: " << a_low_interval << std::endl;
+        // std::cout << "A_High_Interval: " << a_high_interval << std::endl;
+        // std::cout << "B_Low_Interval: " << b_low_interval << std::endl;
+        // std::cout << "B_High_Interval: " << b_high_interval << std::endl;
+        // std::cout << "Calc_Result_Low_Interval: " << result_low_interval << std::endl;
+        // std::cout << "Calc_Result_High_Interval: " << result_high_interval << std::endl;
+        // std::cout << "Current_Result: " << result << std::endl;
+        // std::cout << "Midpoint: " << result_mid << std::endl << std::endl;
 
         i++;
     }
