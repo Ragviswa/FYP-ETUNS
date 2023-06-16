@@ -16,9 +16,10 @@ enum OperationType {
 
 enum Operation {
     add,
-    sub,
     mul,
-    div
+    root,
+    mul2,
+    div2
 };
 
 enum Interval {
@@ -41,6 +42,8 @@ double indeterminant_interval_calc(double ones, double total, double length, Int
 
 double indeterminant_result_calc(double ones, double total, double epsilon);
 
-UnaryNumber operation(UnaryNumber a, UnaryNumber b, Operation x, OperationType mode, double epsilon = 0);
+UnaryNumber operation1(UnaryNumber a, Operation x, OperationType mode, double epsilon = 0);
+
+UnaryNumber operation2(UnaryNumber a, UnaryNumber b, Operation x, OperationType mode, double epsilon = 0);
 
 #endif
