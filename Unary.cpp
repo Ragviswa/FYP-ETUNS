@@ -165,7 +165,7 @@ std::string result;
 
     int i = len - 1;
     while (i >= 0 || result_mid <= result_low_interval || result_mid >= result_high_interval) {
-        if (i > 0) {
+        if (i >= 0) {
             if (a.number[i] == '0' || a.number[i] == '1') {
                 double change = a.number[i] - '0';
                 a_total += 1;
@@ -225,28 +225,30 @@ std::string result;
             delay += 1;
         }
 
+        std::cout << "A: " << a.number << std::endl;
+        std::cout << "Cycle: " << i << std::endl;
+        std::cout << "A_Low_Interval: " << a_low_interval << std::endl;
+        std::cout << "A_High_Interval: " << a_high_interval << std::endl;
+        std::cout << "Calc_Result_Low_Interval: " << result_low_interval << std::endl;
+        std::cout << "Calc_Result_High_Interval: " << result_high_interval << std::endl;
+        std::cout << "Current_Result: " << result << std::endl;
+        std::cout << "Midpoint: " << result_mid << std::endl;
+        std::cout << "Midpoint+Eps: " << result_mid_hi << std::endl;
+        std::cout << "Midpoint-Eps: " << result_mid_lo << std::endl << std::endl;
+
         if (mode == determinant_fixed || mode == determinant_2_fixed) {
             if (len_stream == result_total) {
                 break;
             }
         }
 
-        // std::cout << "A: " << a.number << std::endl;
-        // std::cout << "Cycle: " << i << std::endl;
-        // std::cout << "A_Low_Interval: " << a_low_interval << std::endl;
-        // std::cout << "A_High_Interval: " << a_high_interval << std::endl;
-        // std::cout << "Calc_Result_Low_Interval: " << result_low_interval << std::endl;
-        // std::cout << "Calc_Result_High_Interval: " << result_high_interval << std::endl;
-        // std::cout << "Current_Result: " << result << std::endl;
-        // std::cout << "Midpoint: " << result_mid << std::endl << std::endl;
-
         i--;
     }
 
     UnaryNumber output = {result, delay};
 
-    // std::cout << "A: " << a.number << std::endl;
-    // std::cout << "Output: " << output.number << std::endl << std::endl;
+    std::cout << "A: " << a.number << std::endl;
+    std::cout << "Output: " << output.number << std::endl << std::endl;
 
     return output;
 }

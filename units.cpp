@@ -14,9 +14,9 @@ int singleAdd(int emax = 1, int maxops = 1000) {
             for (int j = 0 ; j < maxops; j++) {
                 double DoubleA = (double) rand()/RAND_MAX;
                 double DoubleB = (double) rand()/RAND_MAX;
-                UnaryNumber InputA = toUnary(DoubleA, round_random, 20, i);
+                UnaryNumber InputA = toUnary(DoubleA, round_random, 40, i);
                 UnaryNumber InputB = toUnary(DoubleB, round_random, 40, i);
-                UnaryNumber Output = operation2(InputA, InputB, add, determinant_fixed, epsilon);
+                UnaryNumber Output = operation2(InputA, InputB, add, determinant_2_fixed, epsilon);
                 double total_error = abs(toDouble(Output) - ((DoubleA+DoubleB)/2.0)/((DoubleA+DoubleB)/2.0));
                 double calc_error  = abs(toDouble(Output) - ((toDouble(InputA)+toDouble(InputB))/2.0));
                 // std::cout << InputA.number << "," << InputB.number << "," << Output.number << std::endl;
@@ -36,9 +36,9 @@ int singleMul(int emax = 1, int maxops = 1000) {
             for (int j = 0 ; j < maxops; j++) {
                 double DoubleA = (double) rand()/RAND_MAX;
                 double DoubleB = (double) rand()/RAND_MAX;
-                UnaryNumber InputA = toUnary(DoubleA, round_random, 0, i);
-                UnaryNumber InputB = toUnary(DoubleB, round_random, 0, i);
-                UnaryNumber Output = operation2(InputA, InputB, mul, determinant_2_fixed, epsilon);
+                UnaryNumber InputA = toUnary(DoubleA, round_random, 20, i);
+                UnaryNumber InputB = toUnary(DoubleB, round_random, 40, i);
+                UnaryNumber Output = operation2(InputA, InputB, mul, determinant_fixed, epsilon);
                 double total_error = abs(toDouble(Output) - (DoubleA*DoubleB))/(DoubleA*DoubleB);
                 double calc_error  = abs(toDouble(Output) - (toDouble(InputA)*toDouble(InputB)));
                 // std::cout << InputA.number << "," << InputB.number << "," << Output.number << std::endl;
@@ -311,6 +311,6 @@ int test() {
 
 int main() {
     srand((unsigned)time(NULL));
-    singleAdd(1);
-    // verificationTest("./UnaryUnitsFolder/UnaryMultiplier/Tests/EpsMax.csv");
+    //singleAdd(10);
+    verificationTest("datatrue.csv");
 }

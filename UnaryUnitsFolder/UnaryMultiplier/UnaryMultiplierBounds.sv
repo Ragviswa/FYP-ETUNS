@@ -2,7 +2,7 @@ module UnaryMultiplier
 #(
     parameter INPUT_WIDTH = 32,
     parameter COUNT_WIDTH = $clog2(INPUT_WIDTH + 1),
-    parameter EPSILON = 0
+    parameter EPSILON = 64
 )
 (
     input logic a,

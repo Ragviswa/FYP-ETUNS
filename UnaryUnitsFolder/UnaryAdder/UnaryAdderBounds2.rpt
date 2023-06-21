@@ -1,0 +1,60 @@
+Resource Usage Summary report for UnaryAdder
+Wed Jun 21 08:16:10 2023
+Quartus Prime Version 22.1std.1 Build 917 02/14/2023 SC Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Analysis & Synthesis Resource Usage Summary
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2023  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details, at
+https://fpgasoftware.intel.com/eula.
+
+
+
++---------------------------------------------------------+
+; Analysis & Synthesis Resource Usage Summary             ;
++---------------------------------------------+-----------+
+; Resource                                    ; Usage     ;
++---------------------------------------------+-----------+
+; Estimate of Logic utilization (ALMs needed) ; 130       ;
+;                                             ;           ;
+; Combinational ALUT usage for logic          ; 190       ;
+;     -- 7 input functions                    ; 1         ;
+;     -- 6 input functions                    ; 68        ;
+;     -- 5 input functions                    ; 23        ;
+;     -- 4 input functions                    ; 19        ;
+;     -- <=3 input functions                  ; 79        ;
+;                                             ;           ;
+; Dedicated logic registers                   ; 38        ;
+;                                             ;           ;
+; I/O pins                                    ; 8         ;
+;                                             ;           ;
+; Total DSP Blocks                            ; 0         ;
+;                                             ;           ;
+; Maximum fan-out node                        ; clk~input ;
+; Maximum fan-out                             ; 38        ;
+; Total fan-out                               ; 941       ;
+; Average fan-out                             ; 3.86      ;
++---------------------------------------------+-----------+
+
+
