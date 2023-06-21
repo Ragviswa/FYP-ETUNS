@@ -113,8 +113,11 @@ double indeterminant_interval_calc(double ones, double total, double length, Int
     }
 }
 
-double indeterminant_result_calc(double ones, double total, double epsilon) {
-    return (1/(total + 1)) * (ones + 0.5 + epsilon);
+double indeterminant_result_calc(double ones, double total, double length, double epsilon) {
+    return (1/(total + 1)) * (ones + 0.5 + epsilon/2.0);
+}
+double determinant_result_calc(double ones, double total, double length, double epsilon) {
+    return (floor(length*((ones + (length - total))/length)) + ceil(length*((ones)/length)) + epsilon)/(length * 2.0);
 }
 
 UnaryNumber operation1(UnaryNumber a, Operation x, OperationType mode, double epsilon) {
@@ -133,14 +136,19 @@ std::string result;
     double result_high_interval;
 
     int len = a.number.length();
+    int len_stream = a.number.length() - a.num_delay;
     int delay = 0;
 
     double (*interval_calc)(double, double, double, Interval);
-    double (*result_calc)(double, double, double);
+    double (*result_calc)(double, double, double, double);
     switch (mode) {
         case indeterminant:
             interval_calc = indeterminant_interval_calc;
             result_calc = indeterminant_result_calc;
+            break;
+        case determinant_2_fixed:
+            interval_calc = determinant_interval_calc;
+            result_calc = determinant_result_calc;
             break;
         case determinant_fixed:
             interval_calc = determinant_interval_calc;
@@ -155,9 +163,9 @@ std::string result;
             break;
     }
 
-    int i = 0;
-    while (i < len || result_mid <= result_low_interval || result_mid >= result_high_interval) {
-        if (i < len) {
+    int i = len - 1;
+    while (i >= 0 || result_mid <= result_low_interval || result_mid >= result_high_interval) {
+        if (i > 0) {
             if (a.number[i] == '0' || a.number[i] == '1') {
                 double change = a.number[i] - '0';
                 a_total += 1;
@@ -186,10 +194,12 @@ std::string result;
             default:
                 throw std::exception();
         }
+        
+        result_mid_lo = result_calc(result_ones, result_total, len, -epsilon);
+        result_mid    = result_calc(result_ones, result_total, len, 0.0);
+        result_mid_hi = result_calc(result_ones, result_total, len, +epsilon);
 
-        if ((result_ones/result_total) == result_low_interval && (result_ones/result_total) == result_high_interval) {
-            break;
-        } else if (result_mid <= result_low_interval) {
+        if (result_mid <= result_low_interval) {
             result += '1';
             result_ones += 1;
             result_total += 1;
@@ -215,15 +225,11 @@ std::string result;
             delay += 1;
         }
 
-        if (mode == determinant_fixed) {
-            if (len == result_total) {
+        if (mode == determinant_fixed || mode == determinant_2_fixed) {
+            if (len_stream == result_total) {
                 break;
             }
         }
-
-        result_mid_lo   = result_total == 0 ? 0.5 : result_calc(result_ones, result_total, -epsilon);
-        result_mid      = result_total == 0 ? 0.5 : result_calc(result_ones, result_total, 0.0);
-        result_mid_hi   = result_total == 0 ? 0.5 : result_calc(result_ones, result_total, +epsilon);
 
         // std::cout << "A: " << a.number << std::endl;
         // std::cout << "Cycle: " << i << std::endl;
@@ -234,7 +240,7 @@ std::string result;
         // std::cout << "Current_Result: " << result << std::endl;
         // std::cout << "Midpoint: " << result_mid << std::endl << std::endl;
 
-        i++;
+        i--;
     }
 
     UnaryNumber output = {result, delay};
@@ -266,14 +272,19 @@ UnaryNumber operation2(UnaryNumber a, UnaryNumber b, Operation x, OperationType 
     double result_high_interval;
 
     int len = std::max(a.number.length(), b.number.length());
+    int len_stream = std::max(a.number.length() - a.num_delay, b.number.length() - b.num_delay);
     int delay = 0;
 
     double (*interval_calc)(double, double, double, Interval);
-    double (*result_calc)(double, double, double);
+    double (*result_calc)(double, double, double, double);
     switch (mode) {
         case indeterminant:
             interval_calc = indeterminant_interval_calc;
             result_calc = indeterminant_result_calc;
+            break;
+        case determinant_2_fixed:
+            interval_calc = determinant_interval_calc;
+            result_calc = determinant_result_calc;
             break;
         case determinant_fixed:
             interval_calc = determinant_interval_calc;
@@ -288,9 +299,9 @@ UnaryNumber operation2(UnaryNumber a, UnaryNumber b, Operation x, OperationType 
             break;
     }
 
-    int i = 0;
-    while (i < len || result_mid <= result_low_interval || result_mid >= result_high_interval) {
-        if (i < len) {
+    int i = len - 1;
+    while (i >= 0 || result_mid <= result_low_interval || result_mid >= result_high_interval) {
+        if (i >= 0) {
             if (a.number[i] == '0' || a.number[i] == '1') {
                 double change = a.number[i] - '0';
                 a_total += 1;
@@ -326,9 +337,11 @@ UnaryNumber operation2(UnaryNumber a, UnaryNumber b, Operation x, OperationType 
                 throw std::exception();
         }
 
-        if ((result_ones/result_total) == result_low_interval && (result_ones/result_total) == result_high_interval) {
-            break;
-        } else if (result_mid <= result_low_interval) {
+        result_mid_lo = result_calc(result_ones, result_total, len, -epsilon);
+        result_mid    = result_calc(result_ones, result_total, len, 0.0);
+        result_mid_hi = result_calc(result_ones, result_total, len, +epsilon);
+
+        if (result_mid <= result_low_interval) {
             result += '1';
             result_ones += 1;
             result_total += 1;
@@ -354,18 +367,15 @@ UnaryNumber operation2(UnaryNumber a, UnaryNumber b, Operation x, OperationType 
             delay += 1;
         }
 
-        if (mode == determinant_fixed) {
-            if (len == result_total) {
+        if (mode == determinant_fixed || mode == determinant_2_fixed) {
+            if (len_stream == result_total) {
                 break;
             }
         }
 
-        result_mid_lo   = result_total == 0 ? 0.5 : result_calc(result_ones, result_total, -epsilon);
-        result_mid      = result_total == 0 ? 0.5 : result_calc(result_ones, result_total, 0.0);
-        result_mid_hi   = result_total == 0 ? 0.5 : result_calc(result_ones, result_total, +epsilon);
-
         // std::cout << "A: " << a.number << std::endl;
-        // std::cout << "B: " << b.number << std::endl << std::endl;
+        // std::cout << "B: " << b.number << std::endl;
+        // std::cout << "Eps: " << epsilon << std::endl << std::endl;
         // std::cout << "Cycle: " << i << std::endl;
         // std::cout << "A_Low_Interval: " << a_low_interval << std::endl;
         // std::cout << "A_High_Interval: " << a_high_interval << std::endl;
@@ -374,9 +384,11 @@ UnaryNumber operation2(UnaryNumber a, UnaryNumber b, Operation x, OperationType 
         // std::cout << "Calc_Result_Low_Interval: " << result_low_interval << std::endl;
         // std::cout << "Calc_Result_High_Interval: " << result_high_interval << std::endl;
         // std::cout << "Current_Result: " << result << std::endl;
-        // std::cout << "Midpoint: " << result_mid << std::endl << std::endl;
+        // std::cout << "Midpoint: " << result_mid << std::endl;
+        // std::cout << "Midpoint+Eps: " << result_mid_hi << std::endl;
+        // std::cout << "Midpoint-Eps: " << result_mid_lo << std::endl << std::endl;
 
-        i++;
+        i--;
     }
 
     UnaryNumber output = {result, delay};
@@ -386,4 +398,23 @@ UnaryNumber operation2(UnaryNumber a, UnaryNumber b, Operation x, OperationType 
     // std::cout << "Output: " << output.number << std::endl << std::endl;
 
     return output;
+}
+
+bool unaryVerification(UnaryNumber a, UnaryNumber b, UnaryNumber Output, Operation x, double epsilon) {
+    UnaryNumber Calc_Output;
+    switch (x) {
+        case add:
+        case mul:
+            Calc_Output = operation2(a, b, x, determinant_2_fixed, epsilon);
+            break;
+        case root:
+        case mul2:
+        case div2:
+            Calc_Output = operation1(a, x, determinant_2_fixed, epsilon);
+            break;
+        default:
+            throw std::exception();
+            break;
+    }
+    return (toDouble(Calc_Output) == toDouble(Output));
 }

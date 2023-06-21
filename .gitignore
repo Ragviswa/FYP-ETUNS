@@ -1,4 +1,7 @@
 OldPlots/*
-Plots/*
-UnaryUnitsFolder/*
 units.dYSM/*
+datatrue.csv
+main
+ctest.txt
+vtest.csv
+UnaryTestbench

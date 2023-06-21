@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 
-directory = './Plots/units_1000_eps/mul_wide_rtz'
+directory = './Plots/Adder/WithRounding/Determinant_Fixed'
 
 def multiple_plots():
     dfs = []
@@ -24,8 +24,8 @@ def multiple_plots():
         j = 0
         for input_length in df.Length.unique():
             slice = df.loc[df.Length == input_length]
-            total_error[j,i] = slice.TotalError.mean() * 100
-            calc_error[j,i] = slice.CalcError.mean() * 100
+            total_error[j,i] = slice.TotalError.mean()
+            calc_error[j,i] = slice.CalcError.mean()
             j += 1
         plt.subplot(1, 2, 1)
         plt.plot(df.Length.unique(), total_error[:,i], label=file_names[i])
@@ -36,12 +36,12 @@ def multiple_plots():
     plt.legend(prop={'size': 10})
     plt.title('Total Error for Each Operator')
     plt.xlabel('Length')
-    plt.ylabel('Error (%)')
+    plt.ylabel('Error')
     plt.subplot(1, 2, 2)
     plt.legend(prop={'size': 10})
     plt.title('Calc Error for Each Operator')
     plt.xlabel('Length')
-    plt.ylabel('Error (%)')
+    plt.ylabel('Error')
     plt.savefig(f'{directory}/error.png')
     plt.clf()
 
@@ -79,28 +79,28 @@ def epsilon_plots():
         for input_length in df.Length.unique():
             slice = df[(df['Length'] == input_length) & (df['Epsilon'] == e)]
             delay[j,i] = slice.Delay.mean()
-            total_error[j,i] = slice.TotalError.mean() * 100
-            calc_error[j,i] = slice.CalcError.mean() * 100
+            total_error[j,i] = slice.TotalError.mean()
+            calc_error[j,i] = slice.CalcError.mean()
             j += 1
         plt.figure(1)
-        plt.subplot(1, 2, 1)
-        plt.plot(df.Length.unique(), total_error[:,i], label=e)
-        plt.subplot(1, 2, 2)
+        # plt.subplot(1, 2, 1)
+        # plt.plot(df.Length.unique(), total_error[:,i], label=e)
+        # plt.subplot(1, 2, 2)
         plt.plot(df.Length.unique(), calc_error[:,i], label=e)
         plt.figure(2)
         plt.plot(df.Length.unique(), delay[:,i], label=e)
         i += 1
     plt.figure(1)
-    plt.subplot(1, 2, 1)
-    plt.legend(prop={'size': 10})
-    plt.title(f'Total Error for {file_name}')
-    plt.xlabel('Length')
-    plt.ylabel('Error (%)')
-    plt.subplot(1, 2, 2)
+    # plt.subplot(1, 2, 1)
+    # plt.legend(prop={'size': 10})
+    # plt.title(f'Total Error for {file_name}')
+    # plt.xlabel('Length')
+    # plt.ylabel('Error')
+    # plt.subplot(1, 2, 2)
     plt.legend(prop={'size': 10})
     plt.title(f'Calc Error for {file_name}')
     plt.xlabel('Length')
-    plt.ylabel('Error (%)')
+    plt.ylabel('Error')
     plt.savefig(f'{directory}/error.png')
     plt.clf()
     plt.figure(2)

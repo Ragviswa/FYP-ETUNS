@@ -11,7 +11,8 @@ enum rounding_mode {
 enum OperationType {
     indeterminant,
     determinant_fixed,
-    determinant_free
+    determinant_free,
+    determinant_2_fixed
 };
 
 enum Operation {
@@ -45,5 +46,7 @@ double indeterminant_result_calc(double ones, double total, double epsilon);
 UnaryNumber operation1(UnaryNumber a, Operation x, OperationType mode, double epsilon = 0);
 
 UnaryNumber operation2(UnaryNumber a, UnaryNumber b, Operation x, OperationType mode, double epsilon = 0);
+
+bool unaryVerification(UnaryNumber a, UnaryNumber b, UnaryNumber Output, Operation x, double epsilon = 0);
 
 #endif

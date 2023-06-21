@@ -2,21 +2,25 @@
 #include <exception>
 #include <iostream>
 #include <cmath>
+#include <vector>
+#include <fstream>
+#include <sstream>
 
 int singleAdd(int emax = 1, int maxops = 1000) {
     std::cout << "Epsilon,Length,Delay,TotalError,CalcError" << std::endl;
     for (int e = 0; e < emax; e++) {
-        double epsilon = e * 0.05;
-        for (int i = 1; i <= 64; i*=2) {
+        double epsilon = e * 2;
+        for (int i = 2; i <= 64; i*=2) {
             for (int j = 0 ; j < maxops; j++) {
                 double DoubleA = (double) rand()/RAND_MAX;
                 double DoubleB = (double) rand()/RAND_MAX;
-                UnaryNumber InputA = toUnary(DoubleA, round_random, 0, i);
-                UnaryNumber InputB = toUnary(DoubleB, round_random, 0, i);
+                UnaryNumber InputA = toUnary(DoubleA, round_random, 20, i);
+                UnaryNumber InputB = toUnary(DoubleB, round_random, 40, i);
                 UnaryNumber Output = operation2(InputA, InputB, add, determinant_fixed, epsilon);
-                double total_error = abs(toDouble(Output) - ((DoubleA+DoubleB)/2.0))/((DoubleA+DoubleB)/2.0);
+                double total_error = abs(toDouble(Output) - ((DoubleA+DoubleB)/2.0)/((DoubleA+DoubleB)/2.0));
                 double calc_error  = abs(toDouble(Output) - ((toDouble(InputA)+toDouble(InputB))/2.0));
-                //assert(toDouble(Output) == ((toDouble(InputA)+toDouble(InputB))/2.0));
+                // std::cout << InputA.number << "," << InputB.number << "," << Output.number << std::endl;
+                // assert(toDouble(Output) == std::round(i * (toDouble(InputA)+toDouble(InputB))/2.0) / i);
                 std::cout << epsilon << "," << i << "," << Output.num_delay << "," << total_error << "," << calc_error << std::endl;
             }
         }
@@ -27,17 +31,18 @@ int singleAdd(int emax = 1, int maxops = 1000) {
 int singleMul(int emax = 1, int maxops = 1000) {
     std::cout << "Epsilon,Length,Delay,TotalError,CalcError" << std::endl;
     for (int e = 0; e < emax; e++) {
-        double epsilon = e * 0.05;
+        double epsilon = e * 2;
         for (int i = 1; i <= 64; i*=2) {
             for (int j = 0 ; j < maxops; j++) {
                 double DoubleA = (double) rand()/RAND_MAX;
                 double DoubleB = (double) rand()/RAND_MAX;
                 UnaryNumber InputA = toUnary(DoubleA, round_random, 0, i);
                 UnaryNumber InputB = toUnary(DoubleB, round_random, 0, i);
-                UnaryNumber Output = operation2(InputA, InputB, mul, determinant_fixed, epsilon);
+                UnaryNumber Output = operation2(InputA, InputB, mul, determinant_2_fixed, epsilon);
                 double total_error = abs(toDouble(Output) - (DoubleA*DoubleB))/(DoubleA*DoubleB);
                 double calc_error  = abs(toDouble(Output) - (toDouble(InputA)*toDouble(InputB)));
-                //assert(toDouble(Output) == (toDouble(InputA)*toDouble(InputB)));
+                // std::cout << InputA.number << "," << InputB.number << "," << Output.number << std::endl;
+                // assert(toDouble(Output) == std::round(i * (toDouble(InputA)*toDouble(InputB))) / i);
                 std::cout << epsilon << "," << i << "," << Output.num_delay << "," << total_error << "," << calc_error << std::endl;
             }
         }
@@ -210,6 +215,52 @@ int singleDiv2 (int emax = 1, int maxops = 1000) {
     return 0;
 }
 
+void verificationTest (std::string filename) {
+    std::vector<std::vector<std::string> > content;
+	std::vector<std::string> row;
+    std::vector<std::string> failed_tests;
+	std::string line, arg;
+	std::fstream csvfile (filename, std::ios::in);
+	if (csvfile.is_open()) {
+		while (std::getline(csvfile, line)) {
+			row.clear();
+			std::stringstream str(line);
+			while (std::getline(str, arg, ',')) {
+				row.push_back(arg);
+            }
+			content.push_back(row);
+		}
+	} else {
+		std::cout << "Could not open the file" << std::endl;
+    }
+    int pass_tests = 0;
+    int fail_tests = 0;
+
+    for (int i = 0; i < content.size(); i++) {
+        UnaryNumber InputA = {content[i][0], 0};
+        UnaryNumber InputB = {content[i][1], 0};
+        UnaryNumber Output = {content[i][2], 0};
+        Operation Operator = Operation(std::stoi(content[i][3]));
+        double Epsilon = std::stod(content[i][4]);
+
+        if (unaryVerification(InputA, InputB, Output, Operator, Epsilon)) {
+            pass_tests++;
+        } else {
+            fail_tests++;
+            failed_tests.push_back(std::to_string(i+1));
+        }
+	}
+
+	std::cout << "Passed Tests: " << pass_tests << std::endl;
+    std::cout << "Failed Tests: " << fail_tests << std::endl;
+    std::cout << "Failed Tests: ";
+    for (int i = 0; i < failed_tests.size(); i++) {
+        std::cout << failed_tests[i] << ", ";
+    }
+    std::cout << std::endl;
+    
+}
+
 int test() {
     double a = 1.0/2.0;
     double b = 1.0/4.0;
@@ -260,5 +311,6 @@ int test() {
 
 int main() {
     srand((unsigned)time(NULL));
-    singleDiv2(1);
+    singleAdd(1);
+    // verificationTest("./UnaryUnitsFolder/UnaryMultiplier/Tests/EpsMax.csv");
 }

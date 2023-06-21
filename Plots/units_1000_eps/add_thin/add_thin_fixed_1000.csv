@@ -1,0 +1,24 @@
+----------------------Inputs------------------------
+UnaryA: 01
+FloatA: 0.5
+DelayA: 0
+UnaryB: 00
+FloatB: 0
+DelayB: 0
+UnaryC: 11
+FloatC: 1
+DelayC: 0
+UnaryD: 10
+FloatD: 0.5
+DelayD: 0
+----------------------------------------------------
+
+----------------------Outputs-----------------------
+UnaryAB: *11
+FloatAB: 1
+DelayAB: 1
+UnaryCD: *01
+FloatCD: 0.5
+DelayCD: 1
+----------------------------------------------------
+
