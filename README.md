@@ -1,1 +1,2 @@
 # FYP-ETUNS
+The following repository contains the Masters Thesis Project about the Early Termination Unary Number System. This number system is explored in the form of arithmetic operators such as Adders, Subtractors, Multipliers, Dividers and Square Root. The hardware units designed in SystemVerilog were modelled and verified through algorithms written in C++. They support variants for those that are maximally accurate and maximally efficient.
